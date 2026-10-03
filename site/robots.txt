@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://3dprinter.arvo.works/sitemap.xml

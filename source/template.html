@@ -1,0 +1,454 @@
+<title>Hvilken 3D-printer?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a build plate. Graph-paper ground, one hot-nozzle accent; picker first, evidence below. */
+:root{
+  --bg:#eceeea; --plate:#f7f8f5; --ink:#1a1e1b; --muted:#59615b; --line:#cfd5ce; --grid:rgba(26,30,27,.055);
+  --accent:#d24e17; --accent-ink:#fff; --accent-soft:#f6dccd;
+  --ok:#2f7d4f; --ok-soft:#dcefe2; --warn:#a46a05; --warn-soft:#f6ebcf; --bad:#b23a3a; --bad-soft:#f5dcdc;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121514; --plate:#1a1e1c; --ink:#e6eae5; --muted:#9aa39c; --line:#2f3632; --grid:rgba(230,234,229,.05);
+  --accent:#ff7a3d; --accent-ink:#1a0d05; --accent-soft:#3a2116;
+  --ok:#6cc391; --ok-soft:#18301f; --warn:#e2b04a; --warn-soft:#33290f; --bad:#ec8080; --bad-soft:#3a1a1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121514; --plate:#1a1e1c; --ink:#e6eae5; --muted:#9aa39c; --line:#2f3632; --grid:rgba(230,234,229,.05);
+  --accent:#ff7a3d; --accent-ink:#1a0d05; --accent-soft:#3a2116;
+  --ok:#6cc391; --ok-soft:#18301f; --warn:#e2b04a; --warn-soft:#33290f; --bad:#ec8080; --bad-soft:#3a1a1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;letter-spacing:.01em;line-height:1.02;text-wrap:balance;margin:0}
+h2{font-size:clamp(30px,4.2vw,46px);text-transform:uppercase}
+h3{font-size:24px;font-weight:600}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tnum{font-variant-numeric:tabular-nums}
+p{max-width:68ch}
+
+/* hero */
+header.hero{padding-block:56px 28px;display:grid;gap:18px}
+.hero h1{font-size:clamp(48px,9vw,112px);text-transform:uppercase}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lede{font-size:19px;max-width:60ch;margin:0}
+.ruler{display:flex;flex-wrap:wrap;gap:8px 22px;font:500 13px var(--f-mono);color:var(--muted);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-block:10px}
+.ruler b{color:var(--ink);font-weight:500}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px}
+nav.toc a{font:500 13px var(--f-mono);text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--plate);padding:6px 10px;border-radius:999px}
+nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:12px}
+section>.head{display:grid;gap:8px}
+
+/* picker */
+.picker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:start}
+@media (max-width:860px){.picker{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--plate);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.q{display:grid;gap:8px;padding-block:12px;border-bottom:1px dashed var(--line)}
+.q:last-child{border-bottom:0}
+.q legend,.q .ql{font-weight:600;padding:0}
+.q fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:14px;background:var(--bg);cursor:pointer;user-select:none}
+.chip input:checked+span{background:var(--ink);color:var(--plate);border-color:var(--ink)}
+.chip input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:13px;color:var(--muted)}
+.results{display:grid;gap:12px}
+.rec{background:var(--plate);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px}
+.rec.first{border:2px solid var(--accent)}
+.rec .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rec .rank{font:500 12px var(--f-mono);color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+.rec h3{font-size:30px}
+.price{font:500 18px var(--f-mono)}
+.why{margin:0;padding-left:18px;display:grid;gap:3px;font-size:15px}
+.why li.neg{color:var(--muted)}
+.why li.neg::marker{content:"– "}
+.why li.pos::marker{content:"+ ";color:var(--ok)}
+.excluded{font-size:14px;color:var(--muted)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{font:500 14px var(--f-body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:var(--r);padding:7px 12px;cursor:pointer;text-decoration:none}
+button:hover{border-color:var(--ink)}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* badges */
+.b{display:inline-block;font:500 11px/1.6 var(--f-mono);padding:0 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;letter-spacing:.02em}
+.b.ok{color:var(--ok);background:var(--ok-soft);border-color:transparent}
+.b.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.b.bad{color:var(--bad);background:var(--bad-soft);border-color:transparent}
+.b.n{color:var(--muted);background:transparent;border-color:var(--line)}
+.b.note{white-space:normal;border-radius:var(--r);padding:2px 8px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}.dot.n{background:var(--line)}
+
+/* personas */
+.personas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px}
+.persona{background:var(--plate);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;align-content:start}
+.persona .pick{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:15px;align-items:baseline}
+.persona .pick dt{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.persona .pick dd{margin:0;font-weight:600}
+.persona .pick dd.main{color:var(--accent)}
+.persona p{margin:0;font-size:15px}
+.persona details summary{cursor:pointer;font-size:14px;color:var(--muted)}
+
+/* chart */
+.chart{background:var(--plate);border:1px solid var(--line);border-radius:var(--r);padding:12px;overflow-x:auto}
+.chart svg{display:block;min-width:640px;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* table */
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--plate)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);white-space:nowrap;position:sticky;top:0;background:var(--plate)}
+th button{all:unset;cursor:pointer}
+th button:focus-visible{outline:2px solid var(--accent)}
+th .tip{cursor:help;border-bottom:1px dotted var(--muted)}
+th[aria-sort] button::after{content:" ↕";opacity:.4}
+th[aria-sort="ascending"] button::after{content:" ↑";opacity:1}
+th[aria-sort="descending"] button::after{content:" ↓";opacity:1}
+td.name{font-weight:600;min-width:170px}
+td.name small{display:block;font-weight:400;color:var(--muted)}
+tr:hover td{background:var(--bg)}
+td .yes{color:var(--ok);font-weight:600}
+td .no{color:var(--muted)}
+td .part{color:var(--warn);font-weight:600}
+.cmpbox{white-space:nowrap}
+
+/* compare */
+.compare{background:var(--plate);border:2px solid var(--ink);border-radius:var(--r);padding:16px;display:grid;gap:12px}
+.compare table td,.compare table th{min-width:180px}
+.compare table th:first-child,.compare table td:first-child{min-width:130px;position:sticky;left:0;background:var(--plate)}
+.compare td.diff{background:var(--accent-soft)}
+
+/* printer cards */
+.cards{display:grid;gap:10px}
+details.card{background:var(--plate);border:1px solid var(--line);border-radius:var(--r)}
+details.card>summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:baseline}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary h3{font-size:26px}
+details.card>summary .sum{grid-column:1/-1;color:var(--muted);font-size:15px}
+details.card>summary .tags{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+details.card[open]>summary{border-bottom:1px solid var(--line)}
+.cardbody{padding:16px;display:grid;gap:18px}
+.pc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.pc ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px;font-size:15px}
+.pc h4{margin:0;font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.08em}
+.pc .plus h4{color:var(--ok)}.pc .minus h4{color:var(--bad)}
+.specs{display:grid;grid-template-columns:minmax(120px,170px) minmax(0,1fr);border-top:1px solid var(--line);font-size:14px}
+.specs>div{padding:8px 0;border-bottom:1px solid var(--line)}
+.specs .k{font:500 12px var(--f-mono);color:var(--muted);padding-right:10px}
+.specs .v{min-width:0}
+.specs .v .src{font-size:12px;margin-left:6px;white-space:nowrap}
+@media (max-width:520px){.specs{grid-template-columns:minmax(0,1fr)}.specs .k{border-bottom:0;padding-bottom:0}}
+.verdict{border-left:3px solid var(--accent);padding-left:12px;margin:0}
+
+/* prose blocks */
+.prose{display:grid;gap:12px}
+.prose p{margin:0}
+.warnings{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}
+.warnings article{background:var(--plate);border:1px solid var(--line);border-top:3px solid var(--warn);border-radius:var(--r);padding:14px;display:grid;gap:6px;align-content:start}
+.warnings h3{font-size:21px}
+.warnings p{margin:0;font-size:15px}
+.warnings small{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+dl.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:12px;margin:0}
+dl.gloss div{background:var(--plate);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+dl.gloss dt{font-weight:600}
+dl.gloss dd{margin:4px 0 0;font-size:15px}
+dl.gloss dd.when{color:var(--muted);font-size:14px}
+.rules{margin:0;padding-left:20px;display:grid;gap:6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.tooltip{position:fixed;z-index:10;max-width:300px;background:var(--ink);color:var(--plate);padding:8px 10px;border-radius:var(--r);font-size:13px;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.rec{transition:border-color .2s}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <span class="eyebrow">Købsguide · opdateret <span id="date"></span></span>
+  <h1>Hvilken 3D-printer skal jeg <em>købe?</em></h1>
+  <p class="lede">Svar på fem spørgsmål og få tre konkrete forslag. Alle tal kommer fra producentens egen side, uafhængige test eller en dansk forhandler. Hvert felt er bagefter tjekket af en anden agent, og felter, der ikke kunne bekræftes, er markeret. Ingen affiliate-links.</p>
+  <div class="ruler tnum" id="ruler"></div>
+  <nav class="toc" aria-label="Indhold">
+    <a href="#vaelg">Find din printer</a><a href="#typer">Typiske købere</a><a href="#kort">Pris mod størrelse</a><a href="#tabel">Sammenlign alle</a><a href="#printere">Printer for printer</a><a href="#saelge">Kan jeg sælge det?</a><a href="#advarsler">Advarsler</a><a href="#ordliste">Ordliste</a><a href="#metode">Metode</a>
+  </nav>
+</header>
+
+<section id="vaelg">
+  <div class="head"><span class="eyebrow">Trin 1</span><h2>Find din printer</h2></div>
+  <div class="picker">
+    <form class="panel" id="picker" autocomplete="off"></form>
+    <div class="results" id="results" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="typer">
+  <div class="head"><span class="eyebrow">Genvej</span><h2>Typiske købere</h2><p>Kender du dig selv i en af dem, er det her det korte svar.</p></div>
+  <div class="personas" id="personas"></div>
+</section>
+
+<section id="kort">
+  <div class="head"><span class="eyebrow">Overblik</span><h2>Pris mod byggevolumen</h2><p>Hver prik er en printer. Længere til højre er dyrere (logaritmisk akse), højere oppe er større emner. Hold musen over en prik, eller tryk på den, for at se navn og detaljer. Klik åbner printerens kort.</p></div>
+  <div class="chart" id="chart"></div>
+  <div class="legend" id="legend"></div>
+</section>
+
+<section id="tabel">
+  <div class="head"><span class="eyebrow">Alle printere</span><h2>Sammenlign alle</h2><p>Klik på en kolonne for at sortere. Hold musen over en overskrift for at se, hvad den betyder. Sæt flueben ved op til fire printere for at se dem side om side.</p></div>
+  <div class="tools" id="filters"></div>
+  <div class="tablebox"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  <div class="compare" id="compare" hidden></div>
+</section>
+
+<section id="printere">
+  <div class="head"><span class="eyebrow">Detaljer og kilder</span><h2>Printer for printer</h2><p>Hvert felt har en kilde og et mærke: <span class="b ok">bekræftet</span> betyder, at en anden agent fandt samme tal hos producenten, <span class="b warn">rettet</span> at tallet blev rettet under tjekket, og <span class="b bad">ikke verificeret</span> at ingen primær kilde kunne findes.</p></div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section id="saelge">
+  <div class="head"><span class="eyebrow">Spørgsmålet fra LinkedIn</span><h2>Kan jeg sælge det, jeg printer?</h2></div>
+  <div class="two"><div class="prose" id="sell"></div><div class="prose panel" id="tco"></div></div>
+</section>
+
+<section id="advarsler">
+  <div class="head"><span class="eyebrow">Før du køber</span><h2>Advarsler</h2></div>
+  <div class="warnings" id="warnings"></div>
+</section>
+
+<section id="ordliste">
+  <div class="head"><span class="eyebrow">Hvad betyder det?</span><h2>Ordliste</h2></div>
+  <dl class="gloss" id="gloss"></dl>
+</section>
+
+<section id="regler">
+  <div class="head"><span class="eyebrow">Tommelfingerregler</span><h2>Hvis du kun læser én ting</h2></div>
+  <div class="two"><ol class="rules panel" id="rules"></ol><div class="prose panel" id="firstyear"></div></div>
+</section>
+
+<section id="metode">
+  <div class="head"><span class="eyebrow">Hvorfor stole på den her side?</span><h2>Metode</h2></div>
+  <div class="prose" id="method"></div>
+</section>
+<footer id="foot"></footer>
+</div>
+<div class="tooltip" id="tt" hidden></div>
+
+<script>
+const DATA = /*DATA*/null;
+</script>
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const kr=n=>n==null?'–':n.toLocaleString('da-DK')+' kr.';
+const P=DATA.printers, byId=Object.fromEntries(P.map(p=>[p.id,p]));
+const liters=p=>p.volume&&p.volume.length===3?p.volume[0]*p.volume[1]*p.volume[2]/1e6:null;
+const vol=p=>p.volume&&p.volume.length===3?p.volume.map(v=>Math.round(v)).join('×')+' mm':'–';
+const basisBadge={dk:['ok','dansk pris'],'eu-adjusted':['warn','EU-pris, omregnet'],'eu-dk-vat':['warn','EU-pris m. dansk moms'],unverified:['bad','pris ikke verificeret']};
+const pb=p=>{const [c,t]=basisBadge[p.priceBasis]||basisBadge.unverified;return `<span class="b ${c}">${t}</span>`};
+const statusCls={'bekræftet':'ok','rettet':'warn','ikke verificeret':'bad'};
+const ynp=(v)=>v==='ja'||v==='aktiv'||v==='standard'?'<span class="yes">'+esc(v)+'</span>':(v==='nej'||v==='ingen'||v==='n/a'?'<span class="no">'+esc(v)+'</span>':'<span class="part">'+esc(v)+'</span>');
+let store={};try{store=JSON.parse(localStorage.getItem('pf3d')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('pf3d',JSON.stringify(store))}catch(e){}};
+
+$('#date').textContent=DATA.dateText;
+const nFields=P.reduce((a,p)=>a+p.fields.length,0), nOk=P.reduce((a,p)=>a+p.fields.filter(f=>f.status==='bekræftet').length,0), nFix=P.reduce((a,p)=>a+p.fields.filter(f=>f.status==='rettet').length,0), nBad=nFields-nOk-nFix;
+$('#ruler').innerHTML=`<span><b>${P.length}</b> printere</span><span><b>${nFields}</b> felter med kilde</span><span><b>${nOk}</b> bekræftet</span><span><b>${nFix}</b> rettet</span><span><b>${nBad}</b> ikke verificeret</span><span><b>${P.filter(p=>p.priceBasis==='dk').length}</b> danske priser</span>`;
+
+/* ---------- picker ---------- */
+const Q=[
+ {id:'budget',q:'Hvor meget vil du højst give?',hint:'Printeren alene. Farvesystem lægges til, hvis du vælger farver som vigtigt.',opts:[['2500','Under 2.500 kr.'],['5000','Op til 5.000 kr.'],['10000','Op til 10.000 kr.'],['99999','Det er ikke det vigtigste']],def:'5000'},
+ {id:'use',q:'Hvad vil du mest printe?',hint:'Vælg det, der fylder mest.',opts:[['pla','Dimser, holdere, legetøj'],['func','Funktionelle dele, der skal tåle varme eller sol'],['tech','Stærke tekniske dele (nylon, kulfiber)'],['fine','Figurer og meget fine detaljer'],['big','Store emner over 25 cm']],def:'pla'},
+ {id:'color',q:'Flere farver i samme print?',opts:[['0','Ligegyldigt'],['1','Gerne'],['2','Vigtigt']],def:'0'},
+ {id:'open',q:'Sky, åbenhed og reparation',opts:[['0','Ligegyldigt'],['1','Den skal kunne køre uden sky'],['2','Åben kildekode og reparerbar']],def:'0'},
+ {id:'place',q:'Hvor skal den stå?',opts:[['shop','Værksted, garage, kælder'],['home','I stuen eller på kontoret']],def:'shop'},
+];
+const ans=Object.assign(Object.fromEntries(Q.map(q=>[q.id,q.def])),store.ans||{});
+$('#picker').innerHTML=Q.map(q=>`<div class="q"><fieldset><legend>${esc(q.q)}</legend>${q.hint?`<span class="hint">${esc(q.hint)}</span>`:''}<div class="chips">${q.opts.map(([v,l],i)=>`<label class="chip"><input type="radio" id="q-${q.id}-${i}" name="${q.id}" value="${v}" ${ans[q.id]===v?'checked':''}><span>${esc(l)}</span></label>`).join('')}</div></fieldset></div>`).join('');
+$('#picker').addEventListener('change',e=>{ans[e.target.name]=e.target.value;store.ans=ans;save();renderResults()});
+$('#picker').addEventListener('submit',e=>e.preventDefault());
+
+function score(p,a){
+  const why=[],neg=[];let s=0;
+  const wantColor=+a.color, budget=+a.budget;
+  const price=(wantColor===2&&p.comboPriceDKK)?p.comboPriceDKK:p.priceDKK;
+  if(price==null) return null;
+  if(price>budget) return {out:'over budget',p};
+  const resin=p.tech==='Resin';
+  // use case
+  if(a.use==='fine'){ if(resin){s+=40;why.push('Resin giver langt finere detaljer end filament')} else {s-=10;neg.push('Filament viser lagstriber på små figurer')} }
+  else if(resin){return {out:'resin passer ikke til det, du vil printe',p}}
+  if(a.use==='pla'){ s+=10; if(p.tier==='begynder'){s+=8;why.push('Enkel og billig at komme i gang med')} }
+  if(a.use==='func'){ if(p.engineering==='ja'){s+=25;why.push('Kan printe ABS og ASA, der tåler varme og sol')} else if(p.engineering==='begrænset'){s+=5;neg.push('ABS/ASA kun med forbehold')} else return {out:'kan ikke printe ABS/ASA ordentligt',p}; if(p.enclosed==='ja')s+=6; if(p.chamber==='aktiv'){s+=6;why.push('Aktivt opvarmet kammer mindsker vridning')} }
+  if(a.use==='tech'){ if(p.engineering!=='ja') return {out:'ikke til nylon og kulfiber',p}; s+=15; if(p.chamber==='aktiv'){s+=18;why.push('Aktivt opvarmet kammer, som nylon og store ABS-dele kræver')} else neg.push('Intet aktivt opvarmet kammer'); if(p.hardened==='standard'){s+=8;why.push('Hærdet dyse følger med til kulfiber')} else if(p.hardened==='tilkøb'){neg.push('Hærdet dyse skal købes ekstra')} }
+  if(a.use==='big'){ const L=liters(p)||0; const zmax=Math.max(...(p.volume||[0])); if(zmax<300) {s-=15;neg.push('Under 30 cm i den største retning')} s+=Math.min(30,L/1.2); if(zmax>=320) why.push(`Stort byggerum: ${vol(p)}`) }
+  // color
+  if(wantColor>0){ if(p.multi==='værktøjsskifter'){s+=wantColor*12;why.push('Værktøjsskifter: farveskift næsten uden spild')} else if(p.multi==='medfølger-i-combo'||p.multi==='tilkøb'){s+=wantColor*8;why.push(`Farvesystem ${p.multi==='tilkøb'?'kan købes til':'findes som combo'}${p.multiMax?` (op til ${p.multiMax} farver)`:''}`)} else { if(wantColor===2) return {out:'kan ikke printe flere farver',p}; s-=6;neg.push('Kun én farve ad gangen') } }
+  // openness
+  if(+a.open===1){ if(p.cloud==='sky som standard'){s-=10;neg.push('Sky er standard; uden den mister du app og fjernadgang')} else {s+=8;why.push('Kører fint helt uden sky')} }
+  if(+a.open===2){ if(p.openness==='åben'){s+=22;why.push('Åben kildekode, standarddele, kan repareres')} else if(p.openness==='delvist åben'){s+=6;neg.push('Kun delvist åben firmware')} else {s-=14;neg.push('Lukket firmware og egne reservedele')} if(p.cloud==='sky som standard')s-=6 }
+  // placement
+  if(a.place==='home'){ if(p.enclosed==='ja'){s+=6;why.push('Lukket kabinet holder støj og lugt inde')} else if(p.tech!=='Resin'){neg.push('Åben ramme: mere støj og ingen filtrering')} if(resin){s-=8;neg.push('Resin lugter og kræver udluftning')} }
+  // general quality / value
+  if(p.generationNote){s-=6;neg.push(p.generationNote)}
+  s+=Math.max(0,8-(price/budget)*8);
+  if(p.tier==='byg-selv'){ if(+a.open===2) why.push('Du bygger og forstår maskinen selv'); else {s-=12;neg.push('Byggesæt: regn med mange timers montering')} }
+  return {p,s,price,why,neg};
+}
+function renderResults(){
+  const all=P.map(p=>score(p,ans)).filter(Boolean);
+  const ok=all.filter(r=>!r.out).sort((a,b)=>b.s-a.s), out=all.filter(r=>r.out);
+  const top=ok.slice(0,3);
+  if(!top.length){$('#results').innerHTML=`<div class="rec"><h3>Ingen printer passer</h3><p>Ingen printer i oversigten opfylder alle dine svar. Hæv budgettet eller sæt farver til «Gerne».</p></div>`;return}
+  const labels=['Bedste match','Nummer to','Nummer tre'];
+  $('#results').innerHTML=top.map((r,i)=>{const p=r.p;return `<article class="rec ${i?'':'first'}">
+    <div class="top"><span class="rank">${labels[i]}</span><span class="price tnum">${kr(r.price)} ${pb(p)}</span></div>
+    <h3>${esc(p.name)}</h3>
+    <p style="margin:0">${esc(p.summary)}</p>
+    <ul class="why">${r.why.slice(0,4).map(w=>`<li class="pos">${esc(w)}</li>`).join('')}${r.neg.slice(0,3).map(w=>`<li class="neg">${esc(w)}</li>`).join('')}</ul>
+    <div class="btnrow"><a class="btn" href="#p-${p.id}" data-open="${p.id}">Se detaljer og kilder</a><button type="button" data-cmp="${p.id}">${cmp.has(p.id)?'Fjern fra sammenligning':'Sammenlign'}</button></div>
+  </article>`}).join('')+(out.length?`<p class="excluded">Sorteret fra: ${out.map(r=>`${esc(r.p.name)} (${esc(r.out)})`).join(' · ')}.</p>`:'');
+}
+
+/* ---------- personas ---------- */
+$('#personas').innerHTML=DATA.personas.map(x=>{const a=byId[x.pickId],b=byId[x.runnerUpId],c=x.budgetPickId&&byId[x.budgetPickId];return `<article class="persona">
+  <h3>${esc(x.title)}</h3><p>${esc(x.description)}</p>
+  <dl class="pick"><dt>Køb</dt><dd class="main">${a?`<a href="#p-${a.id}" data-open="${a.id}">${esc(a.name)}</a> <span class="mono tnum" style="font-weight:400">${kr(a.priceDKK)}</span>`:esc(x.pickId)}</dd>
+  <dt>Alternativ</dt><dd>${b?`<a href="#p-${b.id}" data-open="${b.id}">${esc(b.name)}</a> <span class="mono tnum" style="font-weight:400">${kr(b.priceDKK)}</span>`:esc(x.runnerUpId)}</dd>
+  ${c?`<dt>Billigere</dt><dd><a href="#p-${c.id}" data-open="${c.id}">${esc(c.name)}</a> <span class="mono tnum" style="font-weight:400">${kr(c.priceDKK)}</span></dd>`:''}</dl>
+  <p>${esc(x.why)}</p>
+  <details><summary>Hvorfor ikke de andre?</summary><p>${esc(x.whyNotOthers)}</p></details>
+</article>`}).join('');
+
+/* ---------- chart ---------- */
+(function(){
+  const W=980,H=430,m={l:62,r:24,t:18,b:48};
+  const pts=P.filter(p=>p.priceDKK&&liters(p));
+  const xs=pts.map(p=>p.priceDKK), ys=pts.map(liters);
+  const x0=1000,x1=Math.max(40000,Math.max(...xs)*1.1), y1=Math.ceil(Math.max(...ys)/10)*10;
+  const X=v=>m.l+(Math.log10(v)-Math.log10(x0))/(Math.log10(x1)-Math.log10(x0))*(W-m.l-m.r);
+  const Y=v=>H-m.b-(v/y1)*(H-m.t-m.b);
+  const col=p=>p.tech==='Resin'?'var(--muted)':p.enclosed==='ja'?'var(--accent)':p.enclosed==='delvist'?'var(--warn)':'var(--ok)';
+  let g='';
+  [1000,2000,5000,10000,20000,40000].filter(v=>v<=x1).forEach(v=>{g+=`<line x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H-m.b}" stroke="var(--line)" stroke-width="1"/><text x="${X(v)}" y="${H-m.b+18}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${(v/1000).toLocaleString('da-DK')}k</text>`});
+  for(let v=0;v<=y1;v+=10){g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${m.l-8}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${v} L</text>`}
+  g+=`<text x="${(W+m.l)/2}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans,sans-serif">Pris i kr. (printer alene, logaritmisk)</text>`;
+  const dots=pts.map(p=>({p,x:X(p.priceDKK),y:Y(liters(p))}));
+  const boxes=dots.map(d=>({x0:d.x-8,x1:d.x+8,y0:d.y-8,y1:d.y+8}));
+  const hit=(a,b)=>a.x0<b.x1&&a.x1>b.x0&&a.y0<b.y1&&a.y1>b.y0;
+  let labels='',marks='';
+  dots.sort((a,b)=>a.p.priceDKK-b.p.priceDKK).forEach(d=>{const p=d.p;
+    const short=p.name.replace(/^(Bambu Lab|Elegoo|Creality|Prusa|Anycubic|Snapmaker|Formlabs|QIDI)\s+/,'').replace(/\s*\(.*\)$/,'');
+    const w=short.length*6.6+4,h=14;
+    const cands=[[d.x+11,d.y-7,'start'],[d.x-11-w,d.y-7,'end'],[d.x-w/2,d.y-24,'middle'],[d.x-w/2,d.y+10,'middle'],[d.x+9,d.y-22,'start'],[d.x+9,d.y+8,'start'],[d.x-9-w,d.y-22,'end'],[d.x-9-w,d.y+8,'end']];
+    let ok=null;for(const [x,y] of cands){const bx={x0:x,x1:x+w,y0:y,y1:y+h};if(bx.x0<m.l||bx.x1>W-4||bx.y0<2||bx.y1>H-m.b)continue;if(!boxes.some(b=>hit(b,bx))){ok=bx;break}}
+    if(ok){boxes.push(ok);labels+=`<text x="${ok.x0+2}" y="${ok.y0+11}" font-size="12" fill="var(--ink)" font-family="IBM Plex Sans,sans-serif" pointer-events="none">${esc(short)}</text>`}
+    marks+=`<g class="pt" data-id="${p.id}" tabindex="0" role="img" aria-label="${esc(p.name)}: ${kr(p.priceDKK)}, ${liters(p).toFixed(1)} liter" style="cursor:pointer"><circle cx="${d.x}" cy="${d.y}" r="12" fill="transparent"/><circle cx="${d.x}" cy="${d.y}" r="7" fill="${col(p)}" stroke="var(--plate)" stroke-width="2"/></g>`});
+  g+=marks+labels;
+  $('#chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Pris mod byggevolumen">${g}</svg>`;
+  $('#legend').innerHTML=`<span><i style="background:var(--accent)"></i>Lukket kabinet</span><span><i style="background:var(--warn)"></i>Delvist lukket</span><span><i style="background:var(--ok)"></i>Åben ramme</span><span><i style="background:var(--muted)"></i>Resin</span>`;
+  const tt=$('#tt');
+  const show=(el,x,y)=>{const p=byId[el.dataset.id];tt.innerHTML=`<b>${esc(p.name)}</b><br>${kr(p.priceDKK)} · ${vol(p)} (${liters(p).toFixed(1)} L)<br>${esc(p.summary)}`;tt.hidden=false;tt.style.left=Math.min(x+14,innerWidth-310)+'px';tt.style.top=(y+14)+'px'};
+  $('#chart').addEventListener('mousemove',e=>{const el=e.target.closest('.pt');if(el)show(el,e.clientX,e.clientY);else tt.hidden=true});
+  $('#chart').addEventListener('mouseleave',()=>tt.hidden=true);
+  $('#chart').addEventListener('focusin',e=>{const el=e.target.closest('.pt');if(el){const r=el.getBoundingClientRect();show(el,r.left,r.top)}});
+  $('#chart').addEventListener('focusout',()=>tt.hidden=true);
+  $('#chart').addEventListener('click',e=>{const el=e.target.closest('.pt');if(el)openCard(el.dataset.id)});
+})();
+
+/* ---------- table ---------- */
+const G=Object.fromEntries((DATA.glossary||[]).map(g=>[g.term.toLowerCase(),g.plain]));
+const gl=(...keys)=>{for(const k of keys){const hit=Object.keys(G).find(t=>t.includes(k.toLowerCase()));if(hit)return G[hit]}return ''};
+const COLS=[
+ {k:'name',t:'Printer',get:p=>p.name,cell:p=>`<td class="name">${esc(p.name)}<small>${esc(p.tier)} · ${esc(p.tech)}${p.generationNote?' · '+esc(p.generationNote.split(/[.:–]/)[0]):''}</small></td>`},
+ {k:'price',t:'Pris',tip:'Billigste udgave af printeren alene, inkl. 25 % dansk moms. Mærket viser, hvor prisen kommer fra.',get:p=>p.priceDKK??1e9,cell:p=>`<td class="tnum mono">${kr(p.priceDKK)}<br>${pb(p)}</td>`},
+ {k:'combo',t:'Med farver',tip:'Pris for pakken med farvesystem (AMS, CFS, CANVAS osv.), hvis den findes.',get:p=>p.comboPriceDKK??1e9,cell:p=>`<td class="tnum mono">${p.comboPriceDKK?kr(p.comboPriceDKK):'–'}</td>`},
+ {k:'vol',t:'Byggerum',tip:gl('byggevolumen')||'Det største emne printeren kan lave.',get:p=>liters(p)||0,cell:p=>`<td class="tnum mono">${vol(p)}<br><span class="hint">${liters(p)?liters(p).toFixed(1)+' L':''}</span></td>`},
+ {k:'enc',t:'Kabinet',tip:gl('kabinet'),get:p=>({ja:2,delvist:1,nej:0})[p.enclosed],cell:p=>`<td>${ynp(p.enclosed)}</td>`},
+ {k:'ch',t:'Kammervarme',tip:gl('kammervarme'),get:p=>({aktiv:2,passiv:1,ingen:0})[p.chamber]*100+(p.chamberTempC||0),cell:p=>`<td>${ynp(p.chamber)}${p.chamberTempC?` <span class="mono">${p.chamberTempC} °C</span>`:''}</td>`},
+ {k:'eng',t:'ABS/ASA',tip:gl('filamenttyper')||'Kan den printe varmefaste materialer.',get:p=>({ja:2,'begrænset':1,nej:0})[p.engineering],cell:p=>`<td>${p.tech==='Resin'?'<span class="no">– (resin)</span>':ynp(p.engineering)}</td>`},
+ {k:'hard',t:'Hærdet dyse',tip:gl('hærdet'),get:p=>({standard:2,'tilkøb':1,nej:0,'n/a':-1})[p.hardened],cell:p=>`<td>${p.tech==='Resin'?'<span class="no">–</span>':ynp(p.hardened)}</td>`},
+ {k:'multi',t:'Farver',tip:gl('flerfarve','værktøjsskifter'),get:p=>({'værktøjsskifter':3,'medfølger-i-combo':2,'tilkøb':1,ingen:0})[p.multi]*100+(p.multiMax||0),cell:p=>`<td>${esc(p.multi)}${p.multiMax?` <span class="mono">(${p.multiMax})</span>`:''}</td>`},
+ {k:'cloud',t:'Sky',tip:gl('sky'),get:p=>({'ingen sky':2,'sky valgfri':1,'sky som standard':0})[p.cloud],cell:p=>`<td>${p.cloud==='sky som standard'?'<span class="part">sky som standard</span>':'<span class="yes">'+esc(p.cloud)+'</span>'}</td>`},
+ {k:'open',t:'Åbenhed',tip:gl('firmware','klipper'),get:p=>({'åben':2,'delvist åben':1,lukket:0})[p.openness],cell:p=>`<td>${p.openness==='åben'?'<span class="yes">åben</span>':p.openness==='lukket'?'<span class="no">lukket</span>':'<span class="part">delvist</span>'}</td>`},
+ {k:'noise',t:'Støj',tip:gl('støj'),get:p=>parseFloat((p.noise||'').match(/\d+/)?.[0]||999),cell:p=>`<td class="mono">${esc(p.noise||'ikke målt')}</td>`},
+ {k:'origin',t:'Oprindelse',get:p=>p.origin,cell:p=>`<td>${esc(p.origin)}</td>`},
+ {k:'year',t:'År',get:p=>p.releaseYear,cell:p=>`<td class="mono tnum">${p.releaseYear}</td>`},
+];
+let sort=store.sort||{k:'price',dir:1}, filt=store.filt||'alle';
+const cmp=new Set(store.cmp||[]);
+const FILTERS=[['alle','Alle'],['fdm','Kun filament'],['resin','Kun resin'],['begynder','Begynder'],['mellem','Mellem'],['premium','Premium'],['lukket','Kun lukkede'],['aaben','Åben kildekode']];
+function renderFilters(){$('#filters').innerHTML=FILTERS.map(([k,l])=>`<button type="button" data-f="${k}" class="${filt===k?'on':''}" aria-pressed="${filt===k}">${l}</button>`).join('')+`<span class="hint" id="cmpcount"></span>`}
+$('#filters').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;filt=b.dataset.f;store.filt=filt;save();renderFilters();renderTable()});
+const pass=p=>({alle:1,fdm:p.tech==='FDM',resin:p.tech==='Resin',begynder:p.tier==='begynder',mellem:p.tier==='mellem',premium:p.tier==='premium',lukket:p.enclosed==='ja',aaben:p.openness==='åben'})[filt];
+function renderTable(){
+  const th=`<tr><th>Sml.</th>${COLS.map(c=>`<th ${sort.k===c.k?`aria-sort="${sort.dir>0?'ascending':'descending'}"`:'aria-sort="none"'}><button type="button" data-sort="${c.k}">${c.tip?`<span class="tip" data-tip="${esc(c.tip)}">${c.t}</span>`:c.t}</button></th>`).join('')}</tr>`;
+  $('#tbl thead').innerHTML=th;
+  const col=COLS.find(c=>c.k===sort.k);
+  const rows=P.filter(pass).sort((a,b)=>{const x=col.get(a),y=col.get(b);return (typeof x==='string'?x.localeCompare(y,'da'):x-y)*sort.dir});
+  $('#tbl tbody').innerHTML=rows.map(p=>`<tr><td class="cmpbox"><input type="checkbox" id="c-${p.id}" data-c="${p.id}" ${cmp.has(p.id)?'checked':''} aria-label="Sammenlign ${esc(p.name)}"></td>${COLS.map(c=>c.cell(p)).join('')}</tr>`).join('');
+  $('#cmpcount').textContent=cmp.size?`${cmp.size} valgt til sammenligning`:'';
+}
+$('#tbl').addEventListener('click',e=>{const b=e.target.closest('[data-sort]');if(!b)return;const k=b.dataset.sort;sort=sort.k===k?{k,dir:-sort.dir}:{k,dir:1};store.sort=sort;save();renderTable()});
+$('#tbl').addEventListener('change',e=>{const id=e.target.dataset.c;if(!id)return;toggleCmp(id,e.target.checked)});
+function toggleCmp(id,on){ if(on===undefined) on=!cmp.has(id); if(on){if(cmp.size>=4){const first=cmp.values().next().value;cmp.delete(first)}cmp.add(id)} else cmp.delete(id); store.cmp=[...cmp];save();renderTable();renderCompare();renderResults() }
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cmp]');if(b){toggleCmp(b.dataset.cmp);if(cmp.has(b.dataset.cmp))$('#compare').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+  const o=e.target.closest('[data-open]');if(o){e.preventDefault();openCard(o.dataset.open)}});
+function renderCompare(){
+  const ps=[...cmp].map(id=>byId[id]).filter(Boolean);
+  if(ps.length<1){$('#compare').hidden=true;return}
+  $('#compare').hidden=false;
+  const rows=[['Pris',p=>kr(p.priceDKK)+' '+pb(p)],['Med farver',p=>p.comboPriceDKK?kr(p.comboPriceDKK)+(p.comboName?' · '+esc(p.comboName):''):'–'],['Byggerum',p=>vol(p)+(liters(p)?` (${liters(p).toFixed(1)} L)`:'')],['Kabinet',p=>ynp(p.enclosed)],['Kammervarme',p=>ynp(p.chamber)+(p.chamberTempC?' '+p.chamberTempC+' °C':'')],['Dyse maks.',p=>p.nozzleMaxC?p.nozzleMaxC+' °C':'–'],['ABS/ASA',p=>p.tech==='Resin'?'– (resin)':ynp(p.engineering)],['Hærdet dyse',p=>p.tech==='Resin'?'–':ynp(p.hardened)],['Farver',p=>esc(p.multi)+(p.multiMax?` (${p.multiMax})`:'')+'<br><span class="hint">'+esc(p.multiNote)+'</span>'],['Sky',p=>esc(p.cloud)],['Åbenhed',p=>esc(p.openness)],['Støj',p=>esc(p.noise||'ikke målt')],['Oprindelse',p=>esc(p.origin)],['Godt',p=>'<ul class="why">'+p.pros.map(x=>`<li class="pos">${esc(x)}</li>`).join('')+'</ul>'],['Skidt',p=>'<ul class="why">'+p.cons.map(x=>`<li class="neg">${esc(x)}</li>`).join('')+'</ul>'],['Til',p=>esc(p.bestFor)],['Ikke til',p=>esc(p.notFor)]];
+  const body=rows.map(([l,f])=>{const vals=ps.map(f);const diff=ps.length>1&&new Set(vals).size>1&&l!=='Godt'&&l!=='Skidt'&&l!=='Til'&&l!=='Ikke til';return `<tr><th scope="row">${l}</th>${vals.map(v=>`<td class="${diff?'diff':''}">${v}</td>`).join('')}</tr>`}).join('');
+  $('#compare').innerHTML=`<div class="top" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h3>Side om side</h3><span class="hint">Farvede felter er der, hvor printerne er forskellige.</span><button type="button" id="cmpclear">Ryd sammenligning</button></div>
+  <div class="tablebox"><table><thead><tr><th></th>${ps.map(p=>`<th>${esc(p.name)} <button type="button" data-cmp="${p.id}" aria-label="Fjern ${esc(p.name)}">×</button></th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
+  $('#cmpclear').onclick=()=>{cmp.clear();store.cmp=[];save();renderTable();renderCompare();renderResults()};
+}
+// header tooltips
+document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');const tt=$('#tt');if(t){tt.textContent=t.dataset.tip;tt.hidden=false;const r=t.getBoundingClientRect();tt.style.left=Math.min(r.left,innerWidth-310)+'px';tt.style.top=(r.bottom+8)+'px'}else if(!e.target.closest('.pt'))tt.hidden=true});
+
+/* ---------- cards ---------- */
+$('#cards').innerHTML=[...P].sort((a,b)=>(a.tech===b.tech?0:a.tech==='FDM'?-1:1)||(a.priceDKK||0)-(b.priceDKK||0)).map(p=>{
+  const cnt={b:0,r:0,i:0};p.fields.forEach(f=>{f.status==='bekræftet'?cnt.b++:f.status==='rettet'?cnt.r++:cnt.i++});
+  return `<details class="card" id="p-${p.id}"><summary>
+  <h3>${esc(p.name)}</h3><span class="price tnum">${kr(p.priceDKK)}</span>
+  <span class="sum">${esc(p.summary)}</span>
+  <span class="tags">${pb(p)}<span class="b n">${esc(p.tier)}</span>${p.generationNote?`<span class="b warn note">${esc(p.generationNote)}</span>`:''}<span class="b n"><span class="dot ok"></span>${cnt.b} <span class="dot warn" style="margin-left:6px"></span>${cnt.r} <span class="dot bad" style="margin-left:6px"></span>${cnt.i}</span></span>
+  </summary><div class="cardbody">
+  <p class="verdict">${esc(p.verdict)}</p>
+  <div class="pc"><div class="plus"><h4>Godt</h4><ul>${p.pros.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="minus"><h4>Skidt</h4><ul>${p.cons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+  <div><h4>Til dig, hvis</h4><p style="margin:6px 0 0;font-size:15px">${esc(p.bestFor)}</p><h4 style="margin-top:10px">Ikke til dig, hvis</h4><p style="margin:6px 0 0;font-size:15px">${esc(p.notFor)}</p></div></div>
+  <div class="specs">${p.fields.map(f=>`<div class="k">${esc(f.label)}</div><div class="v">${esc(f.text)} <span class="b ${statusCls[f.status]||'n'}">${esc(f.status)}</span>${f.src?` <a class="src" href="${esc(f.src)}" target="_blank" rel="noopener">kilde ↗</a>`:''}</div>`).join('')}</div>
+  ${p.priceUrl?`<p style="margin:0;font-size:14px">Pris fundet hos ${esc(p.priceWhere)}: <a href="${esc(p.priceUrl)}" target="_blank" rel="noopener">se prisen ↗</a></p>`:`<p style="margin:0;font-size:14px">Pris: ${esc(p.priceWhere)}</p>`}
+  ${p.reviews&&p.reviews.length?`<div><h4 class="eyebrow">Uafhængige test</h4><p style="margin:6px 0 0;font-size:14px">${p.reviews.map(r=>r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}</a>`:esc(r.label)).join(' · ')}</p></div>`:''}
+  <div class="btnrow"><button type="button" data-cmp="${p.id}">Sammenlign</button></div>
+  </div></details>`}).join('');
+function openCard(id){const d=document.getElementById('p-'+id);if(!d)return;d.open=true;d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+
+/* ---------- prose ---------- */
+const paras=t=>String(t||'').split(/\n{1,}/).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join('');
+$('#sell').innerHTML=paras(DATA.canISell);
+$('#tco').innerHTML=`<h3>Hvad koster det at eje?</h3>`+paras(DATA.tco);
+$('#warnings').innerHTML=DATA.warnings.map(w=>`<article><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p>${w.source?`<small>Kilde: ${/^https?:/.test(w.source)?`<a href="${esc(w.source)}" target="_blank" rel="noopener">${esc(w.source)}</a>`:esc(w.source)}</small>`:''}</article>`).join('');
+$('#gloss').innerHTML=DATA.glossary.map(g=>`<div><dt>${esc(g.term)}</dt><dd>${esc(g.plain)}</dd><dd class="when">Betyder noget når: ${esc(g.whenItMatters)}</dd></div>`).join('');
+$('#rules').innerHTML=DATA.rules.map(r=>`<li>${esc(r)}</li>`).join('');
+$('#firstyear').innerHTML=`<h3>Dit første år</h3>`+paras(DATA.firstYear);
+$('#method').innerHTML=DATA.method.map(t=>`<p>${t}</p>`).join('');
+$('#foot').innerHTML=`Data indsamlet ${esc(DATA.dateText)}. Priser og udvalg skifter hver måned. Tjek altid prisen hos forhandleren, før du køber. Ingen affiliate-links, ingen sponsorer. Lavet af Poul Kjeldager Sørensen · <a href="https://arvo.works">arvo.works</a>`;
+
+renderFilters();renderTable();renderCompare();renderResults();
+if(location.hash.startsWith('#p-'))openCard(location.hash.slice(3));
+})();
+</script>
